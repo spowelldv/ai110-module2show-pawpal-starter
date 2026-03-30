@@ -10,17 +10,17 @@ The design uses four main classes. Task is one activity. It has a description, a
 
 b. Design changes
 
-I ended up adding a due date on each task and a pet name on each task so the scheduler can tell what is due today and filter by pet without guessing. I also added real methods on the scheduler for filtering, conflicts, and rolling daily or weekly tasks forward when you mark one done. That is more than the first skeleton but it still matches the same four classes, just with more detail filled in.
+I ended up adding a due date on each task and a pet name on each task so the scheduler can tell what is due today and filter by pet without guessing. I also added real methods on the scheduler for filtering, conflicts, and rolling daily or weekly tasks forward when you mark one done. Later I added priority and duration, JSON save and load on the owner, and extra scheduler helpers. That is more than the first skeleton but it still matches the same four classes, just with more detail filled in.
 
 2. Scheduling Logic and Tradeoffs
 
 a. Constraints and priorities
 
-The scheduler mostly cares about the clock time on each task so it can sort in order. It also uses a due date so “today” only pulls tasks that are actually due today and not finished yet. Filtering can narrow by whether something is done or which pet it belongs to. I did not build priority levels yet, so if two things clash the app just warns about the time overlap instead of picking a winner.
+The scheduler now sorts by priority first and then clock time for today’s open tasks. It still uses a due date so “today” only pulls tasks that are actually due today and not finished yet. Filtering can narrow by whether something is done or which pet it belongs to. If two tasks clash at the same start time you still get a warning instead of the app silently picking one.
 
 b. Tradeoffs
 
-Conflict checking only looks at the exact same time string, not how long a task might run, so two things could still overlap in real life if one is long and the next starts before the first really ends. That is a tradeoff I kept on purpose because it keeps the first version simple and still catches the obvious double booking case when two tasks start at the same minute.
+Conflict checking at the exact same time string is still simpler than full overlap logic, but duration is used for the next open slot helper so there is a second opinion when you ask for a free block. That split is a tradeoff between simple warnings and a heavier scheduling model.
 
 3. AI Collaboration
 
@@ -36,22 +36,26 @@ Sometimes the model wanted to add extra features or refactor everything at once.
 
 a. What you tested
 
-I tested marking tasks complete, adding tasks to pets, sorting by time, daily and weekly follow-up tasks, conflict warnings when two tasks share a time, empty lists, filtering by pet, and a case where there should be no conflict. Those tests matter because they are the main ways this app can break in real use.
+I tested marking tasks complete, adding tasks to pets, sorting by time, daily and weekly follow-up tasks, conflict warnings when two tasks share a time, empty lists, filtering by pet, a case with no conflict, priority ordering, JSON save and load, and the next slot helper. Those tests matter because they are the main ways this app can break in real use.
 
 b. Confidence
 
-I feel pretty good, maybe a 4 out of 5. If I had more time I would test bad time formats, duplicate pets with the same name, and longer tasks that overlap in real minutes even when the start times differ.
+I feel pretty good, maybe a 4 out of 5. If I had more time I would test bad time formats, duplicate pets with the same name, and edge cases around midnight for the slot finder.
 
 5. Reflection
 
 a. What went well
 
-The part I like most is that the same Owner object stays in Streamlit session state, so the app actually feels like one connected system instead of fake lists that reset.
+The part I like most is that the same Owner object stays in Streamlit session state, and now it can hydrate from a JSON file so the app feels less fragile between runs.
 
 b. What you would improve
 
-I would add real priority levels and maybe duration so conflicts could mean more than the same start minute. I would also make the UI a little nicer for editing or deleting a task.
+I would add edit and delete for tasks in the UI, and maybe a darker theme toggle. I would also tighten validation on time strings so bad input fails fast.
 
 c. Key takeaway
 
 The important lesson for me is that I still have to be the one deciding what belongs in scope. The AI can write a lot of code fast, but I have to say what done means and check it.
+
+6. Prompt comparison (optional extension)
+
+I asked one model in Cursor for a compact next-slot algorithm and I compared it mentally to a more verbose version that stepped minute by minute. I kept the minute scan because it was easy to read and fast enough for a small task list. If the course had required two different web models, I would run the same prompt in two tools and compare readability and edge cases the same way.

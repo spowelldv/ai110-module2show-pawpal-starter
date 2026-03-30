@@ -137,3 +137,59 @@ def test_no_conflict_when_times_differ() -> None:
     with patch("pawpal_system._today", return_value=d):
         scheduler = Scheduler(owner)
         assert scheduler.detect_conflicts() == []
+
+
+def test_tasks_for_today_sorts_priority_then_time() -> None:
+    owner = Owner("Jordan")
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+    d = date(2026, 10, 15)
+    pet.add_task(
+        Task(description="Early low", time="08:00", frequency="daily", due_date=d, priority="low")
+    )
+    pet.add_task(
+        Task(description="Late high", time="10:00", frequency="daily", due_date=d, priority="high")
+    )
+    with patch("pawpal_system._today", return_value=d):
+        scheduler = Scheduler(owner)
+        ordered = scheduler.tasks_for_today()
+    assert [t.description for t in ordered] == ["Late high", "Early low"]
+
+
+def test_save_and_load_json_roundtrip(tmp_path) -> None:
+    owner = Owner("Jordan")
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+    pet.add_task(
+        Task(
+            description="Walk",
+            time="09:00",
+            frequency="daily",
+            due_date=date(2026, 11, 1),
+            priority="high",
+            duration_minutes=45,
+        )
+    )
+    path = tmp_path / "data.json"
+    owner.save_to_json(path)
+    owner2 = Owner.load_from_json(path)
+    assert owner2.name == "Jordan"
+    assert owner2.pets[0].name == "Mochi"
+    t = owner2.pets[0].tasks[0]
+    assert t.description == "Walk"
+    assert t.priority == "high"
+    assert t.duration_minutes == 45
+
+
+def test_next_available_slot_finds_gap() -> None:
+    owner = Owner("Jordan")
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+    d = date(2026, 12, 1)
+    pet.add_task(
+        Task(description="A", time="09:00", frequency="once", due_date=d, duration_minutes=60)
+    )
+    with patch("pawpal_system._today", return_value=d):
+        scheduler = Scheduler(owner)
+        slot = scheduler.next_available_slot(after_time="07:00", duration_minutes=30)
+    assert slot == "07:00"

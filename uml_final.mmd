@@ -9,6 +9,8 @@ classDiagram
         +bool completed
         +date due_date
         +str pet_name
+        +str priority
+        +int duration_minutes
         +mark_complete()
     }
 
@@ -22,14 +24,19 @@ classDiagram
         +str name
         +add_pet(pet)
         +all_tasks()
+        +save_to_json(path)
+        +load_from_json(path) Owner$
     }
 
     class Scheduler {
         -Owner owner
         +tasks_for_today()
         +sort_by_time(tasks)
+        +sort_by_priority_and_time(tasks)
         +filter_tasks(completed, pet_name)
         +detect_conflicts()
+        +weighted_score(task)
+        +next_available_slot(after_time, duration)
         +mark_task_complete(pet, task)
     }
 

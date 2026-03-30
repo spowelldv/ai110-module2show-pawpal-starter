@@ -10,15 +10,19 @@ You design the system, implement the logic in Python, then connect it to Streaml
 
 Features
 
-The owner can have more than one pet. Each pet has a name, species, and a list of tasks. Each task has a short description, a clock time in HH:MM form, how often it repeats (daily, weekly, or once), a due date, and whether it is done.
+The owner can have more than one pet. Each pet has a name, species, and a list of tasks. Each task has a description, clock time in HH:MM form, how often it repeats, a due date, done or not, a priority level (low, medium, high), and a duration in minutes for scheduling gaps.
 
-The scheduler sorts by time, can filter by done or not done or by pet name, warns when two unfinished tasks today start at the same time, and when you finish a daily or weekly task it adds the next occurrence on a new due date.
+The scheduler sorts today’s open tasks by priority first then time. It can filter by completion or pet name. It warns when two tasks start at the same clock time. When you finish a daily or weekly task it adds the next occurrence. It also exposes a simple weighted score helper and a next-available time slot finder that respects task durations. The owner can save and load everything to data.json.
 
-The Streamlit app keeps the owner in session state, shows today’s schedule and conflict warnings, and lets you mark tasks done on the same page.
+The Streamlit app loads data.json on startup if it is present, saves after changes, and includes a clean layout with schedule table, conflict warnings, next-slot hint, and mark-done actions.
+
+Optional extensions added in one pass
+
+Priority scheduling, JSON persistence on Owner, next open slot search, tabulate output in main.py, a weighted score function for tasks, and a short prompt-comparison note in reflection.md. data.json is gitignored so your local data is not forced into the repo unless you remove that line.
 
 Smarter scheduling
 
-Sorting, filtering, conflict warnings, and rolling daily or weekly tasks forward when you mark them complete are all implemented in pawpal_system.py and used from the app.
+See pawpal_system.py for sorting, filtering, conflicts, recurrence, save and load, priority plus time ordering, and next slot logic.
 
 Testing PawPal+
 
@@ -28,9 +32,9 @@ From the project folder (activate your venv first if you use one):
 python -m pytest
 ```
 
-The tests cover marking tasks complete, adding tasks to pets, sorting by time, daily and weekly follow-up tasks, conflicts when two tasks share a time, empty schedules, filtering by pet, and a case with no conflict.
+The tests cover the core behaviors plus priority ordering, JSON round trip, and next-slot behavior.
 
-I would rate my confidence around 4 out of 5 for normal use. Conflict checks only look at the same start time, not overlapping durations, and times need to stay in HH:MM format.
+I would rate my confidence around 4 out of 5 for normal use. Conflict checks still use the same start time, not overlapping durations unless you use the slot finder which uses duration.
 
 Demo
 
@@ -38,6 +42,12 @@ Run the app with:
 
 ```
 streamlit run app.py
+```
+
+CLI demo with formatted tables:
+
+```
+python main.py
 ```
 
 Screenshot of the running app:
