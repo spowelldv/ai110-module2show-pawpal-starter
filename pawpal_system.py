@@ -19,6 +19,15 @@ def _priority_rank(priority: str) -> int:
     return {"high": 3, "medium": 2, "low": 1}.get(priority.lower(), 2)
 
 
+def parse_hhmm(s: str) -> Optional[str]:
+    """Return normalized HH:MM if valid, else None."""
+    try:
+        dt = datetime.strptime(s.strip(), "%H:%M")
+        return dt.strftime("%H:%M")
+    except ValueError:
+        return None
+
+
 def _time_to_minutes(hhmm: str) -> int:
     parsed = datetime.strptime(hhmm, "%H:%M")
     return parsed.hour * 60 + parsed.minute
@@ -58,6 +67,13 @@ class Pet:
         """Add a task to this pet."""
         task.pet_name = self.name
         self.tasks.append(task)
+
+    def remove_task(self, task: Task) -> bool:
+        """Remove a task from this pet if it is in the list."""
+        if task in self.tasks:
+            self.tasks.remove(task)
+            return True
+        return False
 
 
 class Owner:

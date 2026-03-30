@@ -1,7 +1,7 @@
 from datetime import date
 from unittest.mock import patch
 
-from pawpal_system import Owner, Pet, Scheduler, Task
+from pawpal_system import Owner, Pet, Scheduler, Task, parse_hhmm
 
 
 def test_task_mark_complete_sets_completed_true() -> None:
@@ -10,6 +10,23 @@ def test_task_mark_complete_sets_completed_true() -> None:
 
     task.mark_complete()
     assert task.completed is True
+
+
+def test_parse_hhmm_valid_and_invalid() -> None:
+    assert parse_hhmm("09:00") == "09:00"
+    assert parse_hhmm("  14:30  ") == "14:30"
+    assert parse_hhmm("25:00") is None
+    assert parse_hhmm("9:00") == "09:00"
+    assert parse_hhmm("not-a-time") is None
+
+
+def test_pet_remove_task() -> None:
+    pet = Pet(name="Mochi", species="dog")
+    t = Task(description="Walk", time="08:00", frequency="daily")
+    pet.add_task(t)
+    assert pet.remove_task(t) is True
+    assert pet.tasks == []
+    assert pet.remove_task(t) is False
 
 
 def test_pet_add_task_increases_task_count_and_sets_pet_name() -> None:

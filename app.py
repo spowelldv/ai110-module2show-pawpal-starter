@@ -2,7 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from pawpal_system import Owner, Pet, Scheduler, Task
+from pawpal_system import Owner, Pet, Scheduler, Task, parse_hhmm
 
 DATA_FILE = Path("data.json")
 
@@ -60,6 +60,10 @@ html, body, [class*="css"] {
   text-align: center;
   padding: 2.5rem 1rem 2rem 1rem;
   margin-bottom: 0.5rem;
+  background: var(--apple-surface);
+  border-radius: 18px;
+  border: 1px solid var(--apple-line);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .apple-hero h1 {
   font-size: clamp(2rem, 5vw, 3rem);
@@ -145,6 +149,14 @@ hr {
   border-radius: 12px !important;
   border: 1px solid var(--apple-line) !important;
 }
+
+[data-testid="stMetricValue"] {
+  font-weight: 600 !important;
+  color: var(--apple-text) !important;
+}
+[data-testid="stMetricLabel"] {
+  color: var(--apple-secondary) !important;
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -174,10 +186,22 @@ st.subheader("Owner")
 owner_name = st.text_input("Owner name", value=owner.name)
 owner.name = owner_name.strip() or owner.name
 
+scheduler = Scheduler(owner)
+total_tasks = sum(len(p.tasks) for p in owner.pets)
+due_today = len(scheduler.tasks_for_today())
+m1, m2, m3 = st.columns(3)
+with m1:
+    st.metric("Pets", len(owner.pets))
+with m2:
+    st.metric("Tasks saved", total_tasks)
+with m3:
+    st.metric("Due today (open)", due_today)
+
 c1, c2 = st.columns(2)
 with c1:
     if st.button("Save data to file", type="primary", use_container_width=True):
         save_owner(owner)
+        st.toast("Saved to data.json.", icon="💾")
         st.success("Saved to data.json.")
 with c2:
     if st.button("Clear saved file (fresh start)", use_container_width=True):
@@ -200,6 +224,7 @@ if st.button("Add pet", type="primary", use_container_width=True):
     if name:
         owner.add_pet(Pet(name=name, species=new_species))
         save_owner(owner)
+        st.toast(f"Added {name}.", icon="🐾")
         st.success(f"Added {name}.")
     else:
         st.warning("Enter a pet name.")
@@ -232,32 +257,71 @@ else:
 
     if st.button("Add task", type="primary", use_container_width=True):
         desc = task_desc.strip()
+        norm_time = parse_hhmm(task_time)
         if not desc:
             st.warning("Enter what to do.")
+        elif norm_time is None:
+            st.warning("Use a valid time like 09:00 or 14:30 (24-hour HH:MM).")
         else:
             pet = next(p for p in owner.pets if p.name == task_pet)
             pet.add_task(
                 Task(
                     description=desc,
-                    time=task_time.strip(),
+                    time=norm_time,
                     frequency=task_freq,
                     priority=task_pri,
                     duration_minutes=int(task_dur),
                 )
             )
             save_owner(owner)
+            st.toast("Task added.", icon="✓")
             st.success("Task added.")
+
+st.divider()
+
+st.subheader("Manage tasks")
+if not owner.pets or total_tasks == 0:
+    st.caption("Add tasks above to remove or review them here.")
+else:
+    flat: list[tuple[Pet, Task]] = []
+    for pet in owner.pets:
+        for t in pet.tasks:
+            flat.append((pet, t))
+
+    def _task_label(i: int) -> str:
+        pet0, task0 = flat[i]
+        st0 = "done" if task0.completed else "open"
+        return f"{pet0.name} · {task0.time} · {task0.description[:48]} · {st0}"
+
+    pick = st.selectbox(
+        "Select a task",
+        range(len(flat)),
+        format_func=_task_label,
+        key="manage_task_pick",
+    )
+    if st.button("Delete selected task", type="secondary", use_container_width=True):
+        pet_del, task_del = flat[pick]
+        pet_del.remove_task(task_del)
+        save_owner(owner)
+        st.toast("Task removed.", icon="🗑️")
+        st.rerun()
 
 st.divider()
 
 st.subheader("Today’s schedule")
 st.caption("Sorted by priority, then time. Conflicts show as warnings.")
 
-scheduler = Scheduler(owner)
 slot_after = st.text_input("Next slot search: after time", value="07:00", key="slot_after")
 slot_len = st.number_input("Slot length (minutes)", min_value=15, max_value=120, value=30, step=5, key="slot_len")
-ns = scheduler.next_available_slot(after_time=slot_after.strip(), duration_minutes=int(slot_len))
-st.caption("Next open slot for that length: " + (ns or "none in the rest of the day"))
+slot_after_ok = parse_hhmm(slot_after)
+if slot_after_ok is None:
+    st.caption("Enter a valid “after time” (HH:MM) to see the next open slot.")
+    ns = None
+else:
+    ns = scheduler.next_available_slot(
+        after_time=slot_after_ok, duration_minutes=int(slot_len)
+    )
+    st.caption("Next open slot for that length: " + (ns or "none in the rest of the day"))
 
 if st.button("Generate schedule", type="primary", use_container_width=True):
     schedule = scheduler.tasks_for_today()
@@ -282,6 +346,9 @@ if st.button("Generate schedule", type="primary", use_container_width=True):
                 }
             )
         st.table(rows)
+        st.caption(
+            "Tip: “weighted score” in the backend favors higher priority and slightly earlier times."
+        )
         st.success("Schedule uses priority first, then time of day.")
 
 st.divider()
@@ -306,4 +373,5 @@ else:
                 pet = next(p for p in owner.pets if p.name == task.pet_name)
                 scheduler.mark_task_complete(pet, task)
                 save_owner(owner)
+                st.toast("Marked complete.", icon="✓")
                 st.rerun()

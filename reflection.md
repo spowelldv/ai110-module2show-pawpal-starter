@@ -10,52 +10,52 @@ The design uses four main classes. Task is one activity. It has a description, a
 
 b. Design changes
 
-I ended up adding a due date on each task and a pet name on each task so the scheduler can tell what is due today and filter by pet without guessing. I also added real methods on the scheduler for filtering, conflicts, and rolling daily or weekly tasks forward when you mark one done. Later I added priority and duration, JSON save and load on the owner, and extra scheduler helpers. That is more than the first skeleton but it still matches the same four classes, just with more detail filled in.
+The code ended up with more than the first skeleton. Tasks now have a due date and a pet name on them. The scheduler can filter tasks, warn about time conflicts, and when you finish a daily or weekly task it creates the next one on the right date. After that I also added priority, how many minutes a task takes, saving the owner to a json file, and a small helper that looks for the next open time slot. I did most of that with AI in Cursor, then I ran main.py and pytest to check that it actually worked.
 
 2. Scheduling Logic and Tradeoffs
 
 a. Constraints and priorities
 
-The scheduler now sorts by priority first and then clock time for today’s open tasks. It still uses a due date so “today” only pulls tasks that are actually due today and not finished yet. Filtering can narrow by whether something is done or which pet it belongs to. If two tasks clash at the same start time you still get a warning instead of the app silently picking one.
+For today’s list it sorts by priority first, then by time. It only pulls tasks that are due today and not done yet. You can filter by whether a task is done or by which pet it belongs to. If two tasks start at the same time you get a warning so you know about it.
 
 b. Tradeoffs
 
-Conflict checking at the exact same time string is still simpler than full overlap logic, but duration is used for the next open slot helper so there is a second opinion when you ask for a free block. That split is a tradeoff between simple warnings and a heavier scheduling model.
+Conflicts are only about the same start time, not two tasks that overlap because one runs long. The next-slot helper does use how long each task takes when it looks for a free gap, so that part is a little smarter, but it is still a simple scheduler for this project, not something like Google Calendar.
 
 3. AI Collaboration
 
 a. How you used AI
 
-I used Cursor with Claude to help scaffold classes, wire Streamlit session state, and write tests when I got stuck on edge cases. The prompts that worked best were the ones where I pasted the exact file or error and asked for a small change, not a whole rewrite.
+I used Cursor with AI help for a lot of the project: the class layout, pawpal_system.py, Streamlit, tests, and the extra features at the end. What worked for me was running pytest and main.py after changes and asking for fixes when something broke or looked wrong, instead of trusting the first answer every time.
 
 b. Judgment and verification
 
-Sometimes the model wanted to add extra features or refactor everything at once. I did not always take that. I kept the model focused on one behavior at a time and I checked it by running the demo script and the tests so I could see if the behavior was really right.
+I did not use every suggestion as-is. Sometimes it wanted to change too much at once or add things I did not need for the assignment. I tried to stay close to what the course asked for. I used tests and the CLI demo to see if things behaved right, and I read enough of the code to explain it myself.
 
 4. Testing and Verification
 
 a. What you tested
 
-I tested marking tasks complete, adding tasks to pets, sorting by time, daily and weekly follow-up tasks, conflict warnings when two tasks share a time, empty lists, filtering by pet, a case with no conflict, priority ordering, JSON save and load, and the next slot helper. Those tests matter because they are the main ways this app can break in real use.
+The tests check marking tasks done, adding tasks, sorting, daily and weekly repeats, conflicts, empty cases, filtering, priority order, saving and loading json, and the next-slot helper. Some of those tests were written with AI help. I ran them a lot while I was building and again before I turned it in.
 
 b. Confidence
 
-I feel pretty good, maybe a 4 out of 5. If I had more time I would test bad time formats, duplicate pets with the same name, and edge cases around midnight for the slot finder.
+I feel okay about it, maybe a 4 out of 5 for the stuff the tests actually cover. I did not dig much into bad time input, two pets with the same name, or weird times around midnight.
 
 5. Reflection
 
 a. What went well
 
-The part I like most is that the same Owner object stays in Streamlit session state, and now it can hydrate from a JSON file so the app feels less fragile between runs.
+I like that the owner stays in session state in Streamlit, and that I can save to a file so everything is not gone every time I refresh, as long as I saved.
 
 b. What you would improve
 
-I would add edit and delete for tasks in the UI, and maybe a darker theme toggle. I would also tighten validation on time strings so bad input fails fast.
+I would add a way to edit or delete tasks in the app, and I would check time input more carefully so garbage strings do not slip through. I might also simplify how the page looks so it is easier to read.
 
 c. Key takeaway
 
-The important lesson for me is that I still have to be the one deciding what belongs in scope. The AI can write a lot of code fast, but I have to say what done means and check it.
+AI can write code fast, but I still have to make sure it matches the assignment, runs, and that I understand it well enough to talk about it.
 
 6. Prompt comparison (optional extension)
 
-I asked one model in Cursor for a compact next-slot algorithm and I compared it mentally to a more verbose version that stepped minute by minute. I kept the minute scan because it was easy to read and fast enough for a small task list. If the course had required two different web models, I would run the same prompt in two tools and compare readability and edge cases the same way.
+I did not run the same prompt in two different chat apps for this class. I built the next-slot part and the rest of the extras in Cursor like the rest of the project. If I had to compare two models for real, I would pick one function, give both the same instructions, and see which answer I could drop into my code and test more easily.
