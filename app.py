@@ -38,6 +38,8 @@ st.markdown(
   --apple-line: #d2d2d7;
   --apple-blue: #0071e3;
   --apple-blue-hover: #0077ed;
+  /* Streamlit’s top bar (menu / Deploy) sits over the scroll area; push content below it */
+  --st-header-clearance: 3.5rem;
 }
 
 html, body, [class*="css"] {
@@ -50,9 +52,9 @@ html, body, [class*="css"] {
   background: var(--apple-bg);
 }
 
-.block-container {
+.stApp .block-container {
   max-width: 692px;
-  padding-top: 2.5rem;
+  padding-top: calc(2.5rem + var(--st-header-clearance)) !important;
   padding-bottom: 4rem;
 }
 
