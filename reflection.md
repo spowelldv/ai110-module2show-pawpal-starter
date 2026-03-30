@@ -1,6 +1,6 @@
-# PawPal+ Project Reflection
+PawPal+ Project Reflection
 
-## 1. System Design
+1. System Design
 
 A user should be able to add their pets with basic info like name and species so the app knows who needs care. They should be able to schedule care tasks such as walks, feeding, or meds with a time and how often each task repeats. They should also be able to see what is due today in a clear order so nothing important gets skipped.
 
@@ -12,9 +12,7 @@ b. Design changes
 
 I ended up adding a due date on each task and a pet name on each task so the scheduler can tell what is due today and filter by pet without guessing. I also added real methods on the scheduler for filtering, conflicts, and rolling daily or weekly tasks forward when you mark one done. That is more than the first skeleton but it still matches the same four classes, just with more detail filled in.
 
----
-
-## 2. Scheduling Logic and Tradeoffs
+2. Scheduling Logic and Tradeoffs
 
 a. Constraints and priorities
 
@@ -24,46 +22,36 @@ b. Tradeoffs
 
 Conflict checking only looks at the exact same time string, not how long a task might run, so two things could still overlap in real life if one is long and the next starts before the first really ends. That is a tradeoff I kept on purpose because it keeps the first version simple and still catches the obvious double booking case when two tasks start at the same minute.
 
----
+3. AI Collaboration
 
-## 3. AI Collaboration
+a. How you used AI
 
-**a. How you used AI**
+I used Cursor with Claude to help scaffold classes, wire Streamlit session state, and write tests when I got stuck on edge cases. The prompts that worked best were the ones where I pasted the exact file or error and asked for a small change, not a whole rewrite.
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+b. Judgment and verification
 
-**b. Judgment and verification**
+Sometimes the model wanted to add extra features or refactor everything at once. I did not always take that. I kept the model focused on one behavior at a time and I checked it by running the demo script and the tests so I could see if the behavior was really right.
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+4. Testing and Verification
 
----
+a. What you tested
 
-## 4. Testing and Verification
+I tested marking tasks complete, adding tasks to pets, sorting by time, daily and weekly follow-up tasks, conflict warnings when two tasks share a time, empty lists, filtering by pet, and a case where there should be no conflict. Those tests matter because they are the main ways this app can break in real use.
 
-**a. What you tested**
+b. Confidence
 
-- What behaviors did you test?
-- Why were these tests important?
+I feel pretty good, maybe a 4 out of 5. If I had more time I would test bad time formats, duplicate pets with the same name, and longer tasks that overlap in real minutes even when the start times differ.
 
-**b. Confidence**
+5. Reflection
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+a. What went well
 
----
+The part I like most is that the same Owner object stays in Streamlit session state, so the app actually feels like one connected system instead of fake lists that reset.
 
-## 5. Reflection
+b. What you would improve
 
-**a. What went well**
+I would add real priority levels and maybe duration so conflicts could mean more than the same start minute. I would also make the UI a little nicer for editing or deleting a task.
 
-- What part of this project are you most satisfied with?
+c. Key takeaway
 
-**b. What you would improve**
-
-- If you had another iteration, what would you improve or redesign?
-
-**c. Key takeaway**
-
-- What is one important thing you learned about designing systems or working with AI on this project?
+The important lesson for me is that I still have to be the one deciding what belongs in scope. The AI can write a lot of code fast, but I have to say what done means and check it.

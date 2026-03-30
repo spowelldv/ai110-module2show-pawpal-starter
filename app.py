@@ -95,3 +95,28 @@ if st.button("Generate schedule"):
                 }
             )
         st.table(rows)
+        st.success("Schedule is sorted by time. Warnings above mean same start time today.")
+
+st.divider()
+
+st.subheader("Mark tasks done today")
+st.caption(
+    "Uses Scheduler.mark_task_complete. Daily and weekly tasks get the next due date added automatically."
+)
+scheduler = Scheduler(owner)
+due = scheduler.tasks_for_today()
+if not owner.pets:
+    st.caption("Add a pet and tasks first.")
+elif not due:
+    st.info("Nothing left to do today that is still open, or nothing is due today.")
+else:
+    for i, task in enumerate(due):
+        label = f"{task.time}  {task.pet_name}  {task.description}  ({task.frequency})"
+        txt_col, btn_col = st.columns([4, 1])
+        with txt_col:
+            st.write(label)
+        with btn_col:
+            if st.button("Done", key=f"done_{i}"):
+                pet = next(p for p in owner.pets if p.name == task.pet_name)
+                scheduler.mark_task_complete(pet, task)
+                st.rerun()

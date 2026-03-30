@@ -1,47 +1,63 @@
-# PawPal+ (Module 2 Project)
+PawPal+ (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+This project is a Streamlit app that helps a pet owner plan care tasks for their pets.
 
-## Scenario
+Scenario
 
-A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
+A busy pet owner needs to stay consistent with pet care. They want to track tasks like walks, feeding, and meds, work within time and preferences, and get a clear daily plan.
 
-- Track pet care tasks (walks, feeding, meds, enrichment, grooming, etc.)
-- Consider constraints (time available, priority, owner preferences)
-- Produce a daily plan and explain why it chose that plan
+You design the system, implement the logic in Python, then connect it to Streamlit.
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+Features
 
-## What you will build
+The owner can have more than one pet. Each pet has a name, species, and a list of tasks. Each task has a short description, a clock time in HH:MM form, how often it repeats (daily, weekly, or once), a due date, and whether it is done.
 
-Your final app should:
+The scheduler sorts by time, can filter by done or not done or by pet name, warns when two unfinished tasks today start at the same time, and when you finish a daily or weekly task it adds the next occurrence on a new due date.
 
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+The Streamlit app keeps the owner in session state, shows today’s schedule and conflict warnings, and lets you mark tasks done on the same page.
 
-## Smarter scheduling
+Smarter scheduling
 
-The scheduler sorts tasks by clock time, filters by completion or pet name, flags same-time conflicts for today, and when you finish a daily or weekly task it adds the next occurrence on a new due date. The Streamlit app shows conflict warnings when you generate the schedule.
+Sorting, filtering, conflict warnings, and rolling daily or weekly tasks forward when you mark them complete are all implemented in pawpal_system.py and used from the app.
 
-## Getting started
+Testing PawPal+
 
-### Setup
+From the project folder (activate your venv first if you use one):
 
-```bash
+```
+python -m pytest
+```
+
+The tests cover marking tasks complete, adding tasks to pets, sorting by time, daily and weekly follow-up tasks, conflicts when two tasks share a time, empty schedules, filtering by pet, and a case with no conflict.
+
+I would rate my confidence around 4 out of 5 for normal use. Conflict checks only look at the same start time, not overlapping durations, and times need to stay in HH:MM format.
+
+Demo
+
+Run the app with:
+
+```
+streamlit run app.py
+```
+
+Screenshot of the running app:
+
+![PawPal+ app](pawpal_demo.png)
+
+UML
+
+The Mermaid source for the class diagram is in uml_final.mmd. The exported image is uml_final.png.
+
+Getting started
+
+Setup:
+
+```
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Suggested workflow
+On Windows use .venv\Scripts\activate instead of source.
 
-1. Read the scenario carefully and identify requirements and edge cases.
-2. Draft a UML diagram (classes, attributes, methods, relationships).
-3. Convert UML into Python class stubs (no logic yet).
-4. Implement scheduling logic in small increments.
-5. Add tests to verify key behaviors.
-6. Connect your logic to the Streamlit UI in `app.py`.
-7. Refine UML so it matches what you actually built.
+Suggested workflow: read the scenario, sketch UML, add class stubs, implement scheduling in small steps, add tests, connect app.py, then align the diagram with the final code.

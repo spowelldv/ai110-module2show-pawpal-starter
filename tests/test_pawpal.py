@@ -69,3 +69,71 @@ def test_detect_conflicts_flags_same_time() -> None:
 
     assert len(warnings) == 1
     assert "09:00" in warnings[0]
+
+
+def test_tasks_for_today_empty_when_pet_has_no_tasks() -> None:
+    owner = Owner("Jordan")
+    owner.add_pet(Pet(name="Mochi", species="dog"))
+    with patch("pawpal_system._today", return_value=date(2026, 6, 1)):
+        scheduler = Scheduler(owner)
+        assert scheduler.tasks_for_today() == []
+
+
+def test_tasks_for_today_skips_completed() -> None:
+    owner = Owner("Jordan")
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+    d = date(2026, 6, 15)
+    t = Task(description="Walk", time="08:00", frequency="daily", completed=True, due_date=d)
+    pet.add_task(t)
+    with patch("pawpal_system._today", return_value=d):
+        scheduler = Scheduler(owner)
+        assert scheduler.tasks_for_today() == []
+
+
+def test_weekly_mark_complete_creates_task_one_week_out() -> None:
+    owner = Owner("Jordan")
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+    d = date(2026, 7, 1)
+    vet = Task(description="Vet check", time="14:00", frequency="weekly", due_date=d)
+    pet.add_task(vet)
+
+    with patch("pawpal_system._today", return_value=d):
+        scheduler = Scheduler(owner)
+        scheduler.mark_task_complete(pet, vet)
+
+    assert vet.completed is True
+    nxt = [x for x in pet.tasks if x is not vet][0]
+    assert nxt.due_date == date(2026, 7, 8)
+
+
+def test_filter_tasks_by_pet_name() -> None:
+    owner = Owner("Jordan")
+    mochi = Pet(name="Mochi", species="dog")
+    luna = Pet(name="Luna", species="cat")
+    owner.add_pet(mochi)
+    owner.add_pet(luna)
+    d = date(2026, 8, 1)
+    mochi.add_task(Task(description="A", time="09:00", frequency="daily", due_date=d))
+    luna.add_task(Task(description="B", time="10:00", frequency="daily", due_date=d))
+
+    scheduler = Scheduler(owner)
+    only_mochi = scheduler.filter_tasks(pet_name="Mochi")
+    assert len(only_mochi) == 1
+    assert only_mochi[0].description == "A"
+
+
+def test_no_conflict_when_times_differ() -> None:
+    owner = Owner("Jordan")
+    a = Pet(name="Mochi", species="dog")
+    b = Pet(name="Luna", species="cat")
+    owner.add_pet(a)
+    owner.add_pet(b)
+    d = date(2026, 9, 1)
+    a.add_task(Task(description="One", time="09:00", frequency="once", due_date=d))
+    b.add_task(Task(description="Two", time="10:00", frequency="once", due_date=d))
+
+    with patch("pawpal_system._today", return_value=d):
+        scheduler = Scheduler(owner)
+        assert scheduler.detect_conflicts() == []
