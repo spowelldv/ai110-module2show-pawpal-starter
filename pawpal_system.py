@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from dataclasses import dataclass, field
 from typing import List
 
@@ -16,7 +17,8 @@ class Task:
     completed: bool = False
 
     def mark_complete(self) -> None:
-        pass
+        """Mark this task as completed."""
+        self.completed = True
 
 
 @dataclass
@@ -28,7 +30,8 @@ class Pet:
     tasks: List[Task] = field(default_factory=list)
 
     def add_task(self, task: Task) -> None:
-        pass
+        """Add a task to this pet."""
+        self.tasks.append(task)
 
 
 class Owner:
@@ -39,10 +42,15 @@ class Owner:
         self.pets: List[Pet] = []
 
     def add_pet(self, pet: Pet) -> None:
-        pass
+        """Add a pet to this owner."""
+        self.pets.append(pet)
 
     def all_tasks(self) -> List[Task]:
-        pass
+        """Return a flat list of tasks across all pets."""
+        tasks: List[Task] = []
+        for pet in self.pets:
+            tasks.extend(pet.tasks)
+        return tasks
 
 
 class Scheduler:
@@ -52,7 +60,14 @@ class Scheduler:
         self.owner = owner
 
     def tasks_for_today(self) -> List[Task]:
-        pass
+        """Return today's tasks (basic version: all tasks, sorted by time)."""
+        return self.sort_by_time(self.owner.all_tasks())
 
     def sort_by_time(self, tasks: List[Task]) -> List[Task]:
-        pass
+        """Sort tasks by their time string (expects HH:MM)."""
+
+        def time_key(task: Task) -> int:
+            parsed = datetime.strptime(task.time, "%H:%M")
+            return parsed.hour * 60 + parsed.minute
+
+        return sorted(tasks, key=time_key)
