@@ -2,15 +2,15 @@
 
 ## 1. System Design
 
-**a. Initial design**
+A user should be able to add their pets with basic info like name and species so the app knows who needs care. They should be able to schedule care tasks such as walks, feeding, or meds with a time and how often each task repeats. They should also be able to see what is due today in a clear order so nothing important gets skipped.
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+a. Initial design
 
-**b. Design changes**
+The design uses four main classes. Task is one activity. It has a description, a time, how often it happens, and whether it is finished, and there is a way to mark it complete. Pet has a name, a species, and a list of tasks, and you can add tasks to a pet. Owner has a name and a list of pets, and can add pets and pull together all tasks from every pet. Scheduler works with an owner. It will list tasks for today and sort them by time once the logic is written.
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+b. Design changes
+
+Nothing has changed yet. The starter code in pawpal_system.py still matches this first design. If I change something later during coding or testing I will write it down here.
 
 ---
 
