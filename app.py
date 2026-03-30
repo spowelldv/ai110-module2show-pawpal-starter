@@ -76,16 +76,21 @@ st.caption("Uses Scheduler to sort tasks by time.")
 if st.button("Generate schedule"):
     scheduler = Scheduler(owner)
     schedule = scheduler.tasks_for_today()
+    warnings = scheduler.detect_conflicts()
+    for w in warnings:
+        st.warning(w)
     if not schedule:
-        st.info("No tasks yet. Add tasks above.")
+        st.info("No tasks due today yet, or everything is done. Add tasks above.")
     else:
         rows = []
         for t in schedule:
             rows.append(
                 {
                     "Time": t.time,
+                    "Pet": t.pet_name,
                     "Task": t.description,
                     "Frequency": t.frequency,
+                    "Due": str(t.due_date),
                     "Done": "yes" if t.completed else "no",
                 }
             )

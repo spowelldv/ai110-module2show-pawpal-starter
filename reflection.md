@@ -10,21 +10,19 @@ The design uses four main classes. Task is one activity. It has a description, a
 
 b. Design changes
 
-Nothing has changed yet. The starter code in pawpal_system.py still matches this first design. If I change something later during coding or testing I will write it down here.
+I ended up adding a due date on each task and a pet name on each task so the scheduler can tell what is due today and filter by pet without guessing. I also added real methods on the scheduler for filtering, conflicts, and rolling daily or weekly tasks forward when you mark one done. That is more than the first skeleton but it still matches the same four classes, just with more detail filled in.
 
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
 
-**a. Constraints and priorities**
+a. Constraints and priorities
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler mostly cares about the clock time on each task so it can sort in order. It also uses a due date so “today” only pulls tasks that are actually due today and not finished yet. Filtering can narrow by whether something is done or which pet it belongs to. I did not build priority levels yet, so if two things clash the app just warns about the time overlap instead of picking a winner.
 
-**b. Tradeoffs**
+b. Tradeoffs
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+Conflict checking only looks at the exact same time string, not how long a task might run, so two things could still overlap in real life if one is long and the next starts before the first really ends. That is a tradeoff I kept on purpose because it keeps the first version simple and still catches the obvious double booking case when two tasks start at the same minute.
 
 ---
 

@@ -22,6 +22,10 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Smarter scheduling
+
+The scheduler sorts tasks by clock time, filters by completion or pet name, flags same-time conflicts for today, and when you finish a daily or weekly task it adds the next occurrence on a new due date. The Streamlit app shows conflict warnings when you generate the schedule.
+
 ## Getting started
 
 ### Setup
